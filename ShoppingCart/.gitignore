@@ -1,0 +1,26 @@
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.ide
+*.ncrunch*
+*.db
+*.log
+.idea/
+# Rider
+/.idea/
+/ShoppingCart/.idea/
+ShoppingCart/.idea/*.iml
+\ShoppingCart\bin\*
+# NuGet
+*.nupkg
+packages/
+
+# OS files
+.DS_Store
+
+# Temporary
+*.tmp
