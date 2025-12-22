@@ -1,3 +1,5 @@
+using ShoppingCart.Entities;
+
 public class ShoppingListProduct
 {
     public int ShoppingListId { get; set; }

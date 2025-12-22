@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ShoppingCart.Entities;
 
 public class AppDbContext : DbContext
 {
@@ -114,5 +115,32 @@ public class AppDbContext : DbContext
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        modelBuilder.Entity<Product>().HasData(
+        new Product 
+        { 
+            Id = 1,
+            Name = "Ekmek", 
+            Price = 15.00m, 
+            DefaultUnit = ShoppingCart.Enums.UnitType.Piece, 
+            DefaultUnitName = "Adet" 
+        },
+        new Product 
+        { 
+            Id = 2, 
+            Name = "Domates", 
+            Price = 49.90m, 
+            DefaultUnit = ShoppingCart.Enums.UnitType.Weight, 
+            DefaultUnitName = "Kg" 
+        },
+        new Product 
+        { 
+            Id = 3, 
+            Name = "1Lt Süt", 
+            Price = 32.50m, 
+            DefaultUnit = ShoppingCart.Enums.UnitType.Piece, 
+            DefaultUnitName = "Adet" 
+        }
+    );
     }
 }
