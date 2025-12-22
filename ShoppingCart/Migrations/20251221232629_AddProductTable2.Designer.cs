@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ShoppingCart.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251221232629_AddProductTable2")]
+    partial class AddProductTable2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,9 +45,8 @@ namespace ShoppingCart.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                    b.Property<int>("Price")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -84,76 +86,6 @@ namespace ShoppingCart.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
-                });
-
-            modelBuilder.Entity("ShoppingList", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsCompleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ShoppingLists");
-                });
-
-            modelBuilder.Entity("ShoppingListMember", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ShoppingListId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("JoinedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("UserId", "ShoppingListId");
-
-                    b.HasIndex("ShoppingListId");
-
-                    b.ToTable("ShoppingListMembers");
-                });
-
-            modelBuilder.Entity("ShoppingListProduct", b =>
-                {
-                    b.Property<int>("ShoppingListId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsChecked")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<decimal>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasDefaultValue(1m);
-
-                    b.HasKey("ShoppingListId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ShoppingListProducts");
                 });
 
             modelBuilder.Entity("User", b =>
@@ -228,44 +160,6 @@ namespace ShoppingCart.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ShoppingListMember", b =>
-                {
-                    b.HasOne("ShoppingList", "ShoppingList")
-                        .WithMany("Members")
-                        .HasForeignKey("ShoppingListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("User", "User")
-                        .WithMany("ShoppingListMemberships")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ShoppingList");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("ShoppingListProduct", b =>
-                {
-                    b.HasOne("Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ShoppingList", "ShoppingList")
-                        .WithMany("Items")
-                        .HasForeignKey("ShoppingListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("ShoppingList");
-                });
-
             modelBuilder.Entity("UserConnection", b =>
                 {
                     b.HasOne("User", "User1")
@@ -285,20 +179,11 @@ namespace ShoppingCart.Migrations
                     b.Navigation("User2");
                 });
 
-            modelBuilder.Entity("ShoppingList", b =>
-                {
-                    b.Navigation("Items");
-
-                    b.Navigation("Members");
-                });
-
             modelBuilder.Entity("User", b =>
                 {
                     b.Navigation("ConnectionsInitiated");
 
                     b.Navigation("ConnectionsReceived");
-
-                    b.Navigation("ShoppingListMemberships");
                 });
 #pragma warning restore 612, 618
         }
