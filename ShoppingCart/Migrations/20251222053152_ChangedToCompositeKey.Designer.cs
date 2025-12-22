@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ShoppingCart.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251222053152_ChangedToCompositeKey")]
+    partial class ChangedToCompositeKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -20,6 +23,35 @@ namespace ShoppingCart.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DefaultUnit")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DefaultUnitName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
+                });
 
             modelBuilder.Entity("RefreshToken", b =>
                 {
@@ -56,62 +88,6 @@ namespace ShoppingCart.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("ShoppingCart.Entities.Product", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DefaultUnit")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("DefaultUnitName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Products");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            DefaultUnit = 0,
-                            DefaultUnitName = "Adet",
-                            Name = "Ekmek",
-                            Price = 15.00m
-                        },
-                        new
-                        {
-                            Id = 2,
-                            DefaultUnit = 1,
-                            DefaultUnitName = "Kg",
-                            Name = "Domates",
-                            Price = 49.90m
-                        },
-                        new
-                        {
-                            Id = 3,
-                            DefaultUnit = 0,
-                            DefaultUnitName = "Adet",
-                            Name = "1Lt Süt",
-                            Price = 32.50m
-                        });
-                });
-
             modelBuilder.Entity("ShoppingList", b =>
                 {
                     b.Property<int>("Id")
@@ -123,15 +99,15 @@ namespace ShoppingCart.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsCompleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("isCompleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.HasKey("Id");
 
@@ -154,32 +130,6 @@ namespace ShoppingCart.Migrations
                     b.HasIndex("ShoppingListId");
 
                     b.ToTable("ShoppingListMembers");
-                });
-
-            modelBuilder.Entity("ShoppingListProduct", b =>
-                {
-                    b.Property<int>("ShoppingListId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsChecked")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<decimal>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasDefaultValue(1m);
-
-                    b.HasKey("ShoppingListId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("ShoppingListProducts");
                 });
 
             modelBuilder.Entity("User", b =>
@@ -273,25 +223,6 @@ namespace ShoppingCart.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ShoppingListProduct", b =>
-                {
-                    b.HasOne("ShoppingCart.Entities.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ShoppingList", "ShoppingList")
-                        .WithMany("Items")
-                        .HasForeignKey("ShoppingListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("ShoppingList");
-                });
-
             modelBuilder.Entity("UserConnection", b =>
                 {
                     b.HasOne("User", "User1")
@@ -313,8 +244,6 @@ namespace ShoppingCart.Migrations
 
             modelBuilder.Entity("ShoppingList", b =>
                 {
-                    b.Navigation("Items");
-
                     b.Navigation("Members");
                 });
 
