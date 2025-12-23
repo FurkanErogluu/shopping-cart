@@ -6,10 +6,13 @@ public class ShoppingListService : IShoppingListService
 
     private readonly IProductRepository _productRepository;
 
-    public ShoppingListService(IShoppingListRepository shoppingListRepository, IProductRepository productRepository)
+    private readonly IConnectionRepository _connectionRepository;
+
+    public ShoppingListService(IShoppingListRepository shoppingListRepository, IProductRepository productRepository, IConnectionRepository connectionRepository)
     {
         _shoppingListRepository = shoppingListRepository;
         _productRepository = productRepository;
+        _connectionRepository = connectionRepository;
     }
 
     public async Task<ShoppingListDto> GetShoppingListByIdAsync(int id)
@@ -23,6 +26,7 @@ public class ShoppingListService : IShoppingListService
             Id = shoppingList.Id,
             Name = shoppingList.Name,
             CreatedAt = shoppingList.CreatedAt,
+            IsCompleted = shoppingList.IsCompleted,
             Items = shoppingList.Items.Select(item => new ShoppingListProductDto
             {
                 ProductId = item.ProductId,
@@ -78,6 +82,10 @@ public async Task<ShoppingListDto> CreateShoppingListAsync(ShoppingList shopping
 
     // Değişiklikleri uygula
     shoppingList.Name = name;
+    if (shoppingList.Items.All(i => i.IsChecked))
+    {
+        isCompleted = true;
+    }
     shoppingList.IsCompleted = isCompleted; // <-- ARTIK BU DA GÜNCELLENİYOR
 
     await _shoppingListRepository.UpdateAsync(shoppingList);
@@ -167,8 +175,8 @@ public async Task<ShoppingListDto> CreateShoppingListAsync(ShoppingList shopping
             throw new BusinessException("ITEM_NOT_FOUND", "Item not found in the shopping list");
         }
 
-        await _shoppingListRepository.SaveChangesAsync();
         item.Quantity = quantity;
+        await _shoppingListRepository.SaveChangesAsync();
     }
     public async Task<List<ShoppingListDto>> GetMyShoppingListsAsync(int userId)
     {
@@ -182,6 +190,7 @@ public async Task<ShoppingListDto> CreateShoppingListAsync(ShoppingList shopping
             Id = shoppingList.Id,
             Name = shoppingList.Name,
             CreatedAt = shoppingList.CreatedAt,
+            IsCompleted = shoppingList.IsCompleted,
             Items = shoppingList.Items.Select(item => new ShoppingListProductDto
             {
                 ProductId = item.ProductId,
@@ -190,4 +199,73 @@ public async Task<ShoppingListDto> CreateShoppingListAsync(ShoppingList shopping
             }).ToList()
         }).ToList();
     } 
+
+    public async Task UpdateItemIsCheckedAsync(int shoppingListId, int productId, bool isChecked)
+    {
+        var shoppingList = await _shoppingListRepository.GetByIdAsync(shoppingListId);
+        
+        if (shoppingList == null) throw new BusinessException("SHOPPING_LIST_NOT_FOUND", "Shopping list not found");
+        
+        var item = shoppingList.Items.FirstOrDefault(i => i.ProductId == productId);
+        if (item == null)
+        {
+            throw new BusinessException("ITEM_NOT_FOUND", "Item not found in the shopping list");
+        }
+
+        item.IsChecked = isChecked;
+        // 2. ADIM: LİSTENİN TAMAMLANDI DURUMUNU GÜNCELLE
+
+        if (shoppingList.Items.Any() && shoppingList.Items.All(i => i.IsChecked))
+        {
+            shoppingList.IsCompleted = true;
+        }
+        else
+        {
+            shoppingList.IsCompleted = false;
+        }
+
+        // 3. ADIM: TEK SEFERDE KAYDET
+        await _shoppingListRepository.UpdateAsync(shoppingList);
+        await _shoppingListRepository.SaveChangesAsync();
+    }
+
+    public async Task AddMemberToShoppingListAsync(int shoppingListId, int userIdToInvite, int requesterId)
+    {
+        // 1. Liste var mı?
+        var shoppingList = await _shoppingListRepository.GetByIdAsync(shoppingListId);
+        if (shoppingList == null) 
+            throw new BusinessException("SHOPPING_LIST_NOT_FOUND", "Shopping list not found");
+
+        // 2. Kullanıcı zaten üye mi?
+        if (shoppingList.Members.Any(m => m.UserId == userIdToInvite))
+        {
+            throw new BusinessException("MEMBER_ALREADY_EXISTS", "User is already a member of the shopping list");
+        }
+
+        // 3. GÜVENLİK KONTROLÜ: Bağlantı (Connection) Var mı?
+        // Eğer kişi kendini eklemeye çalışmıyorsa (başkası ekliyorsa) bağlantı kontrolü yap
+        if( userIdToInvite == requesterId)
+        {
+            throw new BusinessException("INVALID_OPERATION", "You cannot add yourself as a member.");
+        }
+        else
+        {
+            bool areConnected = await _connectionRepository.AreUsersConnectedAsync(requesterId, userIdToInvite);
+            
+            if (!areConnected)
+            {
+                throw new BusinessException("NO_CONNECTION", "You can only add users you are connected with.");
+            }
+        }
+
+        // 4. Her şey tamamsa ekle
+        var newMember = new ShoppingListMember
+        {
+            ShoppingListId = shoppingListId,
+            UserId = userIdToInvite,
+            JoinedAt = DateTime.UtcNow
+        };
+
+        await _shoppingListRepository.AddMemberToListAsync(newMember); // Repository'e bu metodu eklediğini varsayıyorum
+    }
 }

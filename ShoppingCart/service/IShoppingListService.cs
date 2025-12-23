@@ -14,4 +14,8 @@ public interface IShoppingListService
     Task UpdateItemQuantityAsync(int shoppingListId, int productId, decimal quantity);
 
     Task<List<ShoppingListDto>> GetMyShoppingListsAsync(int userId);
+
+    Task UpdateItemIsCheckedAsync(int shoppingListId, int productId, bool isChecked);
+
+    Task AddMemberToShoppingListAsync(int shoppingListId, int userId, int requesterId);
 }

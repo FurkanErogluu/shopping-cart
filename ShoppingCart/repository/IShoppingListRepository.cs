@@ -7,4 +7,6 @@ public interface IShoppingListRepository
     Task SaveChangesAsync();
 
     Task<List<ShoppingList>> GetAllByUserIdAsync(int userId);
+
+    Task AddMemberToListAsync(ShoppingListMember member);
 }
