@@ -67,12 +67,12 @@ public class ShoppingListController : ControllerBase
 
 
     [HttpPut("update")]
-    public async Task<ActionResult<ApiResponse<string>>> UpdateShoppingList([FromBody] UpdateShoppingListDto request)
+    public async Task<ActionResult<ApiResponse<string>>> UpdateShoppingList([FromQuery] int id, [FromQuery] string name, [FromQuery] bool isCompleted)
     {
         try
         {
             // Service artık 3 parametre bekliyor: ID, İsim, Durum
-            await _shoppingListService.UpdateShoppingListAsync(request.Id, request.Name, request.IsCompleted);
+            await _shoppingListService.UpdateShoppingListAsync(id, name, isCompleted);
             return Ok(ApiResponse<string>.Ok("Liste başarıyla güncellendi."));
         }
         catch (BusinessException ex)
@@ -146,5 +146,39 @@ public class ShoppingListController : ControllerBase
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return int.Parse(userIdClaim!);
+    }
+
+    [HttpPut("update-item-isChecked")]
+
+    public async Task<ActionResult<ApiResponse<string>>> UpdateItemIsChecked([FromQuery] int shoppingListId, [FromQuery] int productId, [FromQuery] bool isChecked)
+    {
+        try
+        {
+            await _shoppingListService.UpdateItemIsCheckedAsync(shoppingListId, productId, isChecked);
+            return Ok(ApiResponse<string>.Ok("Item isChecked status updated successfully"));
+        }
+        catch (BusinessException ex)
+        {
+            return BadRequest(ApiResponse<string>.Fail(ex.Code, ex.Message, 400));
+        }
+    }
+
+    [HttpPost("add-member")]
+    public async Task<ActionResult<ApiResponse<string>>> AddMemberToList([FromQuery] int shoppingListId, [FromQuery] int userId)
+    {
+        try
+        {
+            // 1. İşlemi yapan kişinin ID'sini token'dan al
+            var currentUserId = GetCurrentUserId(); 
+
+            // 2. Servise 3. parametre olarak bunu gönder
+            await _shoppingListService.AddMemberToShoppingListAsync(shoppingListId, userId, currentUserId);
+            
+            return Ok(ApiResponse<string>.Ok("User added to the shopping list successfully."));
+        }
+        catch (BusinessException ex)
+        {
+            return BadRequest(ApiResponse<string>.Fail(ex.Code, ex.Message, 400));
+        }
     }
 }

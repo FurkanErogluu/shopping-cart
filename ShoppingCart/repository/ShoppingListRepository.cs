@@ -46,17 +46,23 @@ public class ShoppingListRepository: IShoppingListRepository
     public async Task<List<ShoppingList>> GetAllByUserIdAsync(int userId)
     {
         return await _context.ShoppingLists
-            // 1. Listenin içindeki ürünleri ve detaylarını getir
+
             .Include(x => x.Items)
                 .ThenInclude(x => x.Product)
             
-            // 2. Listenin üyelerini de sorguya dahil et (Hata almamak için)
+
             .Include(x => x.Members) 
 
-            // 3. KRİTİK DÜZELTME BURASI:
-            // "Members listesinin içinde, ID'si 'userId' olan BİRİ VAR MI?" diye soruyoruz.
+
+
             .Where(list => list.Members.Any(member => member.UserId == userId)) 
             
             .ToListAsync();
+    }
+
+    public async Task AddMemberToListAsync(ShoppingListMember member)
+    {
+        _context.ShoppingListMembers.Add(member);
+        await _context.SaveChangesAsync();
     }
 }
