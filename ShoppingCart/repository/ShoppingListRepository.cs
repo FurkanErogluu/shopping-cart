@@ -1,0 +1,62 @@
+using Microsoft.EntityFrameworkCore;
+
+public class ShoppingListRepository: IShoppingListRepository
+{
+    private readonly AppDbContext _context;
+
+    public ShoppingListRepository(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<ShoppingList?> GetByIdAsync(int id)
+{
+    return await _context.ShoppingLists
+        .Include(list => list.Items)           // 1. Listenin maddelerini getir (ShoppingListProducts)
+            .ThenInclude(item => item.Product) // 2. O maddelerin Ürün detaylarını da getir (İsimlerini görebilmek için)
+        .FirstOrDefaultAsync(x => x.Id == id);
+}
+
+    
+
+    public async Task<ShoppingList> CreateAsync(ShoppingList shoppingList)
+    {
+        _context.ShoppingLists.Add(shoppingList);
+        await _context.SaveChangesAsync();
+        return shoppingList;
+    }
+
+    public async Task UpdateAsync(ShoppingList shoppingList)
+    {
+        _context.ShoppingLists.Update(shoppingList);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(ShoppingList shoppingList)
+    {
+        _context.ShoppingLists.Remove(shoppingList);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<ShoppingList>> GetAllByUserIdAsync(int userId)
+    {
+        return await _context.ShoppingLists
+            // 1. Listenin içindeki ürünleri ve detaylarını getir
+            .Include(x => x.Items)
+                .ThenInclude(x => x.Product)
+            
+            // 2. Listenin üyelerini de sorguya dahil et (Hata almamak için)
+            .Include(x => x.Members) 
+
+            // 3. KRİTİK DÜZELTME BURASI:
+            // "Members listesinin içinde, ID'si 'userId' olan BİRİ VAR MI?" diye soruyoruz.
+            .Where(list => list.Members.Any(member => member.UserId == userId)) 
+            
+            .ToListAsync();
+    }
+}

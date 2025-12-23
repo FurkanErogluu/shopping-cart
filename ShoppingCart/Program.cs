@@ -38,6 +38,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero
         };
     });
+// Repository Tanıtımı
+builder.Services.AddScoped<IShoppingListRepository, ShoppingListRepository>();
+
+// Service Tanıtımı
+builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
+
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
