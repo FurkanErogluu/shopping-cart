@@ -266,6 +266,23 @@ public async Task<ShoppingListDto> CreateShoppingListAsync(ShoppingList shopping
             JoinedAt = DateTime.UtcNow
         };
 
-        await _shoppingListRepository.AddMemberToListAsync(newMember); // Repository'e bu metodu eklediğini varsayıyorum
+        await _shoppingListRepository.AddMemberToListAsync(newMember); 
+    }
+    public async Task LeaveShoppingListAsync(int shoppingListId, int requesterId)
+    {
+        // 1. Liste var mı?
+        var shoppingList = await _shoppingListRepository.GetByIdAsync(shoppingListId);
+        if (shoppingList == null) 
+            throw new BusinessException("SHOPPING_LIST_NOT_FOUND", "Shopping list not found");
+
+        // 2. Kullanıcı üye mi?
+        var member = await _shoppingListRepository.GetMemberAsync(shoppingListId, requesterId);
+        if (member == null)
+        {
+            throw new BusinessException("NOT_A_MEMBER", "You are not a member of this shopping list");
+        }
+
+        // 3. Üyeyi listeden çıkar
+        await _shoppingListRepository.RemoveMemberFromListAsync(member); 
     }
 }

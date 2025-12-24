@@ -34,7 +34,7 @@ public class ConnectionRepository : IConnectionRepository
 
     public async Task<bool> AreUsersConnectedAsync(int user1Id, int user2Id)
     {
-        return await _context.UserConnections
+        return await _context.UserConnections 
             .AnyAsync(c =>
                 (c.User1Id == user1Id && c.User2Id == user2Id) ||
                 (c.User1Id == user2Id && c.User2Id == user1Id)

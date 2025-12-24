@@ -10,12 +10,18 @@ public class ShoppingListRepository: IShoppingListRepository
     }
 
     public async Task<ShoppingList?> GetByIdAsync(int id)
-{
-    return await _context.ShoppingLists
-        .Include(list => list.Items)           // 1. Listenin maddelerini getir (ShoppingListProducts)
-            .ThenInclude(item => item.Product) // 2. O maddelerin Ürün detaylarını da getir (İsimlerini görebilmek için)
-        .FirstOrDefaultAsync(x => x.Id == id);
-}
+    {
+        return await _context.ShoppingLists
+            .Include(list => list.Items)           
+                .ThenInclude(item => item.Product) 
+            .FirstOrDefaultAsync(x => x.Id == id);
+    }
+
+    public async Task<ShoppingListMember?> GetMemberAsync(int shoppingListId, int userId)
+    {
+        return await _context.ShoppingListMembers
+            .FirstOrDefaultAsync(m => m.ShoppingListId == shoppingListId && m.UserId == userId);
+    }
 
     
 
@@ -63,6 +69,12 @@ public class ShoppingListRepository: IShoppingListRepository
     public async Task AddMemberToListAsync(ShoppingListMember member)
     {
         _context.ShoppingListMembers.Add(member);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveMemberFromListAsync(ShoppingListMember member)
+    {
+        _context.ShoppingListMembers.Remove(member);
         await _context.SaveChangesAsync();
     }
 }

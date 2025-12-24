@@ -18,4 +18,6 @@ public interface IShoppingListService
     Task UpdateItemIsCheckedAsync(int shoppingListId, int productId, bool isChecked);
 
     Task AddMemberToShoppingListAsync(int shoppingListId, int userId, int requesterId);
+
+    Task LeaveShoppingListAsync(int shoppingListId, int requesterId);
 }

@@ -181,4 +181,21 @@ public class ShoppingListController : ControllerBase
             return BadRequest(ApiResponse<string>.Fail(ex.Code, ex.Message, 400));
         }
     }
+    [HttpDelete("leave-list")]
+
+    public async Task<ActionResult<ApiResponse<string>>> LeaveShoppingList([FromQuery] int shoppingListId)
+    {
+        try
+        {
+            var currentUserId = GetCurrentUserId(); 
+
+            await _shoppingListService.LeaveShoppingListAsync(shoppingListId, currentUserId);
+            
+            return Ok(ApiResponse<string>.Ok("You have left the shopping list successfully."));
+        }
+        catch (BusinessException ex)
+        {
+            return BadRequest(ApiResponse<string>.Fail(ex.Code, ex.Message, 400));
+        }
+    }
 }
