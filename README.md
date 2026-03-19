@@ -1,4 +1,4 @@
-# Shopping Cart API (Collaborative Project)
+# Shopping Cart(Collaborative Project)
 Bu proje, kullanıcıların kişisel veya ortaklaşa alışveriş listeleri oluşturmasına, yönetmesine ve diğer kullanıcılarla etkileşim kurmasına olanak tanıyan backend projesi olup ekipçe gerçekleştirilmiştir. 
 
 ## Öne Çıkan Özellikler
